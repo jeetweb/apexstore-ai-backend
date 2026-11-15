@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/header :: head('Admin Dashboard')}"></head>
+<body class="bg-slate-50 text-slate-800 flex flex-col min-h-screen">
+
+<header th:replace="~{fragments/header :: navbar}"></header>
+
+<main class="flex-grow max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full">
+    <!-- Breadcrumbs -->
+    <nav class="flex text-xs text-slate-500 mb-6" aria-label="Breadcrumb">
+        <ol class="inline-flex items-center space-x-1 md:space-x-2">
+            <li><a href="/" class="hover:text-indigo-600">Home</a></li>
+            <li><i class="fa-solid fa-chevron-right text-[10px] text-slate-400"></i></li>
+            <li class="font-medium text-slate-800">Admin Control Center</li>
+        </ol>
+    </nav>
+
+    <!-- Top Admin Header -->
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between pb-6 border-b border-slate-200 gap-4">
+        <div>
+            <div class="flex items-center space-x-2">
+                <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-amber-100 text-amber-800">Store Admin</span>
+                <span class="text-xs text-slate-400">Java 21 Enterprise Console</span>
+            </div>
+            <h1 class="text-3xl font-extrabold text-slate-900 tracking-tight mt-1">Store Dashboard & Inventory</h1>
+        </div>
+
+        <div class="flex items-center gap-2">
+            <a href="/admin/inventory" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl text-xs transition shadow-sm flex items-center space-x-1.5">
+                <i class="fa-solid fa-boxes-stacked"></i>
+                <span>Inventory Manager</span>
+            </a>
+            <a href="/admin/products/new" class="px-4 py-2 bg-white hover:bg-slate-50 border border-slate-200 text-slate-700 font-bold rounded-xl text-xs transition flex items-center space-x-1.5">
+                <i class="fa-solid fa-plus text-indigo-600"></i>
+                <span>Add Product</span>
+            </a>
+            <a href="/admin/orders" class="px-4 py-2 bg-white hover:bg-slate-50 border border-slate-200 text-slate-700 font-bold rounded-xl text-xs transition flex items-center space-x-1.5">
+                <i class="fa-solid fa-receipt text-indigo-600"></i>
+                <span>All Orders</span>
+            </a>
+        </div>
+    </div>
+
+    <!-- Alert for Low Stock / Out of Stock -->
+    <div th:if="${inventoryStats.lowStockCount > 0 or inventoryStats.outOfStockCount > 0}"
+         class="mt-6 p-4 rounded-2xl bg-amber-50 border border-amber-200 text-xs text-amber-900 flex items-center justify-between shadow-sm">
+        <div class="flex items-center space-x-3">
+            <i class="fa-solid fa-triangle-exclamation text-lg text-amber-600"></i>
+            <div>
+                <span class="font-bold">Inventory Attention Required:</span>
+                There are <span class="font-black" th:text="${inventoryStats.outOfStockCount}">1</span> out-of-stock and
+                <span class="font-black" th:text="${inventoryStats.lowStockCount}">2</span> low-stock items in the catalog.
+            </div>
+        </div>
+        <a href="/admin/inventory?filter=low" class="px-3 py-1 bg-amber-600 text-white font-bold rounded-lg hover:bg-amber-700 transition">
+            Review Stock
+        </a>
+    </div>
+
+    <!-- Metrics Cards Grid -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mt-6">
+        <!-- Revenue -->
+        <div class="bg-white rounded-3xl border border-slate-200 p-6 shadow-sm">
+            <div class="flex items-center justify-between text-slate-400 text-xs font-semibold">
+                <span>Total Settled Revenue</span>
+                <div class="w-8 h-8 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center">
+                    <i class="fa-solid fa-dollar-sign"></i>
+                </div>
+            </div>
+            <div class="text-2xl font-black text-slate-900 mt-2" th:text="'$' + ${#numbers.formatDecimal(totalRevenue, 1, 'COMMA', 2, 'POINT')}">$0.00</div>
+            <div class="text-[11px] text-emerald-600 font-medium mt-1"><i class="fa-solid fa-arrow-trend-up"></i> Live settled payments</div>
+        </div>
+
+        <!-- Orders -->
+        <div class="bg-white rounded-3xl border border-slate-200 p-6 shadow-sm">
+            <div class="flex items-center justify-between text-slate-400 text-xs font-semibold">
+                <span>Orders Processed</span>
+                <div class="w-8 h-8 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center">
+                    <i class="fa-solid fa-box"></i>
+                </div>
+            </div>
+            <div class="text-2xl font-black text-slate-900 mt-2" th:text="${ordersCount}">0</div>
+            <div class="text-[11px] text-slate-500 font-medium mt-1">Atomic transactions</div>
+        </div>
+
+        <!-- Products -->
+        <div class="bg-white rounded-3xl border border-slate-200 p-6 shadow-sm">
+            <div class="flex items-center justify-between text-slate-400 text-xs font-semibold">
+                <span>Active Products</span>
+                <div class="w-8 h-8 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center">
+                    <i class="fa-solid fa-tag"></i>
+                </div>
+            </div>
+            <div class="text-2xl font-black text-slate-900 mt-2" th:text="${inventoryStats.totalProducts}">8</div>
+            <div class="text-[11px] text-slate-500 font-medium mt-1">Catalog items</div>
+        </div>
+
+        <!-- Inventory Status -->
+        <div class="bg-white rounded-3xl border border-slate-200 p-6 shadow-sm">
+            <div class="flex items-center justify-between text-slate-400 text-xs font-semibold">
+                <span>Stock Alerts</span>
+                <div class="w-8 h-8 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center">
+                    <i class="fa-solid fa-warehouse"></i>
+                </div>
+            </div>
+            <div class="text-2xl font-black text-slate-900 mt-2 flex items-baseline space-x-2">
+                <span class="text-rose-600" th:text="${inventoryStats.outOfStockCount}">1</span>
+                <span class="text-xs text-slate-400 font-medium">out /</span>
+                <span class="text-amber-600" th:text="${inventoryStats.lowStockCount}">2</span>
+                <span class="text-xs text-slate-400 font-medium">low</span>
+            </div>
+            <div class="text-[11px] text-slate-500 font-medium mt-1">Live threshold triggers</div>
+        </div>
+    </div>
+
+    <!-- Two Column Layout: Low Stock Watchlist & Recent Orders -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mt-8">
+        
+        <!-- Left: Low Stock Watchlist -->
+        <div class="bg-white rounded-3xl border border-slate-200 p-6 shadow-sm">
+            <div class="flex items-center justify-between pb-4 border-b border-slate-100">
+                <div class="flex items-center space-x-2">
+                    <i class="fa-solid fa-triangle-exclamation text-amber-500"></i>
+                    <h3 class="font-bold text-slate-900 text-sm">Low & Out-of-Stock Watchlist</h3>
+                </div>
+                <a href="/admin/inventory" class="text-xs text-indigo-600 font-bold hover:underline">View All &rarr;</a>
+            </div>
+
+            <div th:if="${lowStockProducts.isEmpty()}" class="py-12 text-center text-xs text-slate-400">
+                <i class="fa-solid fa-circle-check text-2xl text-emerald-500 mb-2 block"></i>
+                All products have healthy inventory levels!
+            </div>
+
+            <div th:if="${!lowStockProducts.isEmpty()}" class="divide-y divide-slate-100 mt-2">
+                <div th:each="product : ${lowStockProducts}" class="py-3 flex items-center justify-between text-xs">
+                    <div class="flex items-center space-x-3">
+                        <img th:src="${product.imageUrl}" class="w-10 h-10 rounded-xl object-cover border border-slate-100">
+                        <div>
+                            <div class="font-bold text-slate-900 truncate max-w-[200px]" th:text="${product.name}">Product</div>
+                            <div class="text-slate-400 text-[11px]">
+                                SKU: <span class="font-mono" th:text="${product.sku}">SKU-001</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="flex items-center space-x-3">
+                        <span th:if="${product.stockQuantity == 0}" class="px-2 py-0.5 rounded-full bg-rose-100 text-rose-800 font-bold text-[10px]">0 in stock</span>
+                        <span th:if="${product.stockQuantity > 0}" class="px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 font-bold text-[10px]" th:text="${product.stockQuantity} + ' left'">3 left</span>
+
+                        <!-- Inline Quick Restock +10 -->
+                        <form th:action="@{/admin/inventory/quick-add}" method="POST">
+                            <input type="hidden" name="productId" th:value="${product.id}">
+                            <input type="hidden" name="amount" value="10">
+                            <button type="submit" class="px-2.5 py-1 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-bold rounded-lg text-[10px] transition border border-indigo-200">
+                                +10 Stock
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right: Recent Orders -->
+        <div class="bg-white rounded-3xl border border-slate-200 p-6 shadow-sm">
+            <div class="flex items-center justify-between pb-4 border-b border-slate-100">
+                <div class="flex items-center space-x-2">
+                    <i class="fa-solid fa-receipt text-indigo-600"></i>
+                    <h3 class="font-bold text-slate-900 text-sm">Recent Store Orders</h3>
+                </div>
+                <a href="/admin/orders" class="text-xs text-indigo-600 font-bold hover:underline">All Orders &rarr;</a>
+            </div>
+
+            <div th:if="${recentOrders.isEmpty()}" class="py-12 text-center text-xs text-slate-400">
+                <i class="fa-solid fa-inbox text-2xl text-slate-300 mb-2 block"></i>
+                No orders placed yet. Place an order via Customer flow to see it here!
+            </div>
+
+            <div th:if="${!recentOrders.isEmpty()}" class="divide-y divide-slate-100 mt-2">
+                <div th:each="order : ${recentOrders}" class="py-3 flex items-center justify-between text-xs">
+                    <div>
+                        <div class="font-mono font-bold text-indigo-600" th:text="${order.orderNumber}">ORD-123</div>
+                        <div class="text-slate-400 text-[11px]" th:text="${order.user.fullName + ' &bull; ' + #temporals.format(order.orderDate, 'MMM dd, HH:mm')}">John &bull; Date</div>
+                    </div>
+
+                    <div class="text-right">
+                        <div class="font-extrabold text-slate-900" th:text="'$' + ${#numbers.formatDecimal(order.totalAmount, 1, 'COMMA', 2, 'POINT')}">$299.00</div>
+                        <span class="inline-block mt-0.5 px-2 py-0.5 rounded-full text-[10px] font-bold"
+                              th:classappend="${order.status.name() == 'PAID' or order.status.name() == 'DELIVERED'} ? 'bg-emerald-100 text-emerald-800' : 'bg-blue-100 text-blue-800'"
+                              th:text="${order.status.displayName}">Paid</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Developer & Admin Quick Tools -->
+    <div class="mt-8 bg-slate-900 text-white rounded-3xl p-6 sm:p-8 flex flex-col md:flex-row items-center justify-between gap-6">
+        <div>
+            <span class="text-xs font-mono text-indigo-400 font-bold uppercase tracking-wider">Internal Diagnostic Rails</span>
+            <h3 class="text-xl font-bold text-white mt-1">Live Database & REST API Inspector</h3>
+            <p class="text-xs text-slate-400 mt-1 max-w-lg">
+                View the in-memory H2 SQL tables (Products, Orders, Carts, Payments) directly or execute REST calls via Swagger UI.
+            </p>
+        </div>
+        <div class="flex items-center space-x-3">
+            <a href="/h2-console" target="_blank" class="px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold text-xs border border-slate-700 transition flex items-center space-x-2">
+                <i class="fa-solid fa-database text-amber-400"></i>
+                <span>H2 SQL Console</span>
+            </a>
+            <a href="/swagger-ui.html" target="_blank" class="px-4 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs transition shadow-md flex items-center space-x-2">
+                <i class="fa-solid fa-book-open"></i>
+                <span>Swagger OpenAPI</span>
+            </a>
+        </div>
+    </div>
+</main>
+
+<footer th:replace="~{fragments/footer :: footer}"></footer>
+
+</body>
+</html>

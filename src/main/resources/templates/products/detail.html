@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head th:replace="~{fragments/header :: head(${product.name})}"></head>
+<body class="bg-slate-50 text-slate-800 flex flex-col min-h-screen">
+
+<header th:replace="~{fragments/header :: navbar}"></header>
+
+<main class="flex-grow max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full">
+    <!-- Breadcrumb -->
+    <nav class="flex text-xs text-slate-500 mb-6" aria-label="Breadcrumb">
+        <ol class="inline-flex items-center space-x-1 md:space-x-2">
+            <li><a href="/" class="hover:text-indigo-600">Home</a></li>
+            <li><i class="fa-solid fa-chevron-right text-[10px] text-slate-400"></i></li>
+            <li><a href="/products" class="hover:text-indigo-600">Catalog</a></li>
+            <li><i class="fa-solid fa-chevron-right text-[10px] text-slate-400"></i></li>
+            <li th:if="${product.category != null}"><a th:href="@{/products(category=${product.category.slug})}" class="hover:text-indigo-600" th:text="${product.category.name}">Category</a></li>
+            <li th:if="${product.category != null}"><i class="fa-solid fa-chevron-right text-[10px] text-slate-400"></i></li>
+            <li class="font-medium text-slate-800 truncate max-w-xs" th:text="${product.name}">Product Name</li>
+        </ol>
+    </nav>
+
+    <!-- Product Layout Grid -->
+    <div class="bg-white rounded-3xl border border-slate-200 shadow-sm p-6 sm:p-10">
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-start">
+            
+            <!-- Left: Product Image -->
+            <div class="relative bg-slate-100 rounded-2xl overflow-hidden border border-slate-100 shadow-inner">
+                <img th:src="${product.imageUrl}" th:alt="${product.name}" class="w-full h-[450px] object-cover">
+                
+                <!-- Stock Status Tag -->
+                <div class="absolute top-4 left-4">
+                    <span th:if="${product.stockQuantity == 0}"
+                          class="px-3 py-1.5 text-xs font-bold rounded-xl bg-rose-600 text-white shadow-lg flex items-center gap-1.5">
+                        <i class="fa-solid fa-ban"></i> Out of Stock
+                    </span>
+                    <span th:if="${product.isLowStock()}"
+                          class="px-3 py-1.5 text-xs font-bold rounded-xl bg-amber-500 text-white shadow-lg flex items-center gap-1.5">
+                        <i class="fa-solid fa-triangle-exclamation"></i> Only <span th:text="${product.stockQuantity}">3</span> Units Remaining!
+                    </span>
+                    <span th:if="${product.isInStock() and !product.isLowStock()}"
+                          class="px-3 py-1.5 text-xs font-bold rounded-xl bg-emerald-600 text-white shadow-lg flex items-center gap-1.5">
+                        <i class="fa-solid fa-check"></i> In Stock &bull; Fast Dispatch
+                    </span>
+                </div>
+            </div>
+
+            <!-- Right: Details & Purchase -->
+            <div class="flex flex-col">
+                <div class="flex items-center justify-between">
+                    <span th:if="${product.category != null}"
+                          th:text="${product.category.name}"
+                          class="px-3 py-1 text-xs font-bold uppercase tracking-wider rounded-lg bg-indigo-50 text-indigo-700">
+                        Category
+                    </span>
+                    <span class="text-xs font-mono text-slate-400">SKU: <strong class="text-slate-600" th:text="${product.sku}">SKU-001</strong></span>
+                </div>
+
+                <h1 class="text-2xl sm:text-3xl font-extrabold text-slate-900 mt-3 leading-tight" th:text="${product.name}">
+                    Product Title
+                </h1>
+
+                <!-- Rating & Reviews -->
+                <div class="flex items-center space-x-2 mt-3">
+                    <div class="flex text-amber-400 text-sm">
+                        <i class="fa-solid fa-star"></i>
+                        <i class="fa-solid fa-star"></i>
+                        <i class="fa-solid fa-star"></i>
+                        <i class="fa-solid fa-star"></i>
+                        <i class="fa-solid fa-star-half-stroke"></i>
+                    </div>
+                    <span class="text-xs font-bold text-slate-700" th:text="${product.rating}">4.9</span>
+                    <span class="text-xs text-slate-400">&bull;</span>
+                    <span class="text-xs text-indigo-600 font-medium hover:underline cursor-pointer" th:text="${product.reviewsCount} + ' verified ratings'">42 verified ratings</span>
+                </div>
+
+                <!-- Price Box -->
+                <div class="mt-6 p-4 rounded-2xl bg-slate-50 border border-slate-200/80 flex items-baseline justify-between">
+                    <div>
+                        <div class="text-xs text-slate-400 font-medium">Price (Excl. Tax)</div>
+                        <div class="text-3xl font-extrabold text-slate-900" th:text="'$' + ${#numbers.formatDecimal(product.price, 1, 'COMMA', 2, 'POINT')}">$1,899.99</div>
+                    </div>
+                    <div class="text-right">
+                        <div class="text-xs text-emerald-600 font-semibold flex items-center justify-end gap-1">
+                            <i class="fa-solid fa-shield-check"></i> Authentic Guarantee
+                        </div>
+                        <div class="text-[11px] text-slate-500">Free shipping on this order</div>
+                    </div>
+                </div>
+
+                <!-- Description -->
+                <div class="mt-6">
+                    <h3 class="text-xs font-bold uppercase tracking-wider text-slate-400">Overview</h3>
+                    <p class="mt-2 text-sm text-slate-600 leading-relaxed" th:text="${product.description}">
+                        Detailed description text.
+                    </p>
+                </div>
+
+                <!-- Live Inventory Alert -->
+                <div class="mt-6">
+                    <div th:if="${product.stockQuantity > 0 and product.isLowStock()}"
+                         class="p-3 bg-amber-50 border border-amber-200 rounded-xl text-xs text-amber-800 flex items-center gap-2">
+                        <i class="fa-solid fa-triangle-exclamation text-amber-600 text-sm"></i>
+                        <span><strong>Low Stock Warning:</strong> Only <span th:text="${product.stockQuantity}">3</span> units left in our warehouse! Order soon to avoid backorder.</span>
+                    </div>
+
+                    <div th:if="${product.stockQuantity == 0}"
+                         class="p-3 bg-rose-50 border border-rose-200 rounded-xl text-xs text-rose-800 flex items-center gap-2">
+                        <i class="fa-solid fa-circle-xmark text-rose-600 text-sm"></i>
+                        <span>This item is currently out of stock. Check back soon or contact store admin for restock ETA.</span>
+                    </div>
+                </div>
+
+                <!-- Add to Cart Action Form -->
+                <div class="mt-8 pt-6 border-t border-slate-200">
+                    <div sec:authorize="isAuthenticated()">
+                        <form th:if="${product.isInStock()}" th:action="@{/cart/add}" method="POST" class="space-y-4">
+                            <input type="hidden" name="productId" th:value="${product.id}">
+                            
+                            <!-- Quantity Selector -->
+                            <div class="flex items-center space-x-4">
+                                <label class="text-xs font-bold text-slate-700 uppercase tracking-wider">Quantity:</label>
+                                <div class="flex items-center border border-slate-300 rounded-xl overflow-hidden bg-white shadow-sm">
+                                    <button type="button" onclick="decrementQty()" class="px-3.5 py-2 text-slate-600 hover:bg-slate-100 transition font-bold text-sm">-</button>
+                                    <input type="number" id="quantityInput" name="quantity" value="1" min="1" th:max="${product.stockQuantity}"
+                                           class="w-14 text-center font-bold text-slate-800 text-sm border-none focus:outline-none py-2" readonly>
+                                    <button type="button" onclick="incrementQty()" class="px-3.5 py-2 text-slate-600 hover:bg-slate-100 transition font-bold text-sm">+</button>
+                                </div>
+                                <span class="text-xs text-slate-500 font-medium" th:text="'(' + ${product.stockQuantity} + ' available)'">(15 available)</span>
+                            </div>
+
+                            <button type="submit"
+                                    class="w-full bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 text-white font-bold py-3.5 px-6 rounded-xl shadow-lg shadow-indigo-600/30 transition flex items-center justify-center space-x-2 text-base">
+                                <i class="fa-solid fa-cart-arrow-down text-lg"></i>
+                                <span>Add to Shopping Cart</span>
+                            </button>
+                        </form>
+
+                        <button th:if="${!product.isInStock()}" disabled
+                                class="w-full bg-slate-200 text-slate-400 font-bold py-3.5 px-6 rounded-xl cursor-not-allowed flex items-center justify-center space-x-2 text-base">
+                            <i class="fa-solid fa-circle-xmark"></i>
+                            <span>Currently Out of Stock</span>
+                        </button>
+                    </div>
+
+                    <div sec:authorize="!isAuthenticated()">
+                        <div class="p-4 bg-indigo-50/60 rounded-2xl border border-indigo-100 text-center">
+                            <p class="text-xs text-indigo-900 font-medium mb-3">Please sign in to add items to your cart and proceed with digital checkout.</p>
+                            <a href="/login" class="inline-flex items-center justify-center px-6 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-sm rounded-xl transition shadow-md shadow-indigo-500/20">
+                                <i class="fa-solid fa-right-to-bracket mr-2"></i> Sign In to Buy
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Digital Payment Assurance -->
+                <div class="mt-8 pt-6 border-t border-slate-100 flex items-center justify-between text-xs text-slate-400">
+                    <span class="flex items-center gap-1.5"><i class="fa-solid fa-lock text-emerald-500"></i> 256-Bit SSL Checkout</span>
+                    <span class="flex items-center gap-1.5"><i class="fa-solid fa-rotate-left text-indigo-500"></i> 30-Day Money Back</span>
+                    <span class="flex items-center gap-1.5"><i class="fa-solid fa-truck text-blue-500"></i> Fast Insured Dispatch</span>
+                </div>
+
+            </div>
+
+        </div>
+    </div>
+</main>
+
+<script th:inline="javascript">
+    const maxStock = /*[[${product.stockQuantity}]]*/ 1;
+    function incrementQty() {
+        const input = document.getElementById('quantityInput');
+        let current = parseInt(input.value) || 1;
+        if (current < maxStock) {
+            input.value = current + 1;
+        }
+    }
+    function decrementQty() {
+        const input = document.getElementById('quantityInput');
+        let current = parseInt(input.value) || 1;
+        if (current > 1) {
+            input.value = current - 1;
+        }
+    }
+</script>
+
+<footer th:replace="~{fragments/footer :: footer}"></footer>
+
+</body>
+</html>

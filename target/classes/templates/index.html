@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head th:replace="~{fragments/header :: head('Home')}"></head>
+<body class="bg-slate-50 text-slate-800 flex flex-col min-h-screen">
+
+<header th:replace="~{fragments/header :: navbar}"></header>
+
+<main class="flex-grow">
+    <!-- Flash Messages -->
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-4">
+        <div th:if="${successMessage}" class="p-4 mb-4 text-sm text-emerald-800 rounded-2xl bg-emerald-50 border border-emerald-200 flex items-center shadow-sm">
+            <i class="fa-solid fa-circle-check text-lg mr-3 text-emerald-500"></i>
+            <span th:text="${successMessage}">Success message</span>
+        </div>
+        <div th:if="${errorMessage}" class="p-4 mb-4 text-sm text-rose-800 rounded-2xl bg-rose-50 border border-rose-200 flex items-center shadow-sm">
+            <i class="fa-solid fa-circle-exclamation text-lg mr-3 text-rose-500"></i>
+            <span th:text="${errorMessage}">Error message</span>
+        </div>
+    </div>
+
+    <!-- Quick Demo Testing Bar -->
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-2">
+        <div class="bg-gradient-to-r from-indigo-900 via-slate-900 to-indigo-950 text-white rounded-2xl p-4 sm:p-5 shadow-lg border border-indigo-800/50 flex flex-col md:flex-row items-center justify-between gap-4">
+            <div class="flex items-center space-x-3">
+                <div class="w-10 h-10 rounded-xl bg-indigo-500/20 border border-indigo-400/30 flex items-center justify-center text-indigo-400">
+                    <i class="fa-solid fa-flask text-lg"></i>
+                </div>
+                <div>
+                    <h3 class="text-sm font-bold text-white flex items-center gap-2">
+                        Interactive Java 21 E-Commerce Sandbox
+                        <span class="text-[10px] bg-indigo-500 text-white px-2 py-0.5 rounded-full uppercase tracking-wider font-semibold">Ready</span>
+                    </h3>
+                    <p class="text-xs text-slate-300">
+                        Test Customer Login, Real-time Cart, Digital Checkout (Card/UPI/Wallet), and live Inventory stock deduction.
+                    </p>
+                </div>
+            </div>
+            <div class="flex items-center gap-2 flex-wrap">
+                <a sec:authorize="!isAuthenticated()" href="/login" class="text-xs font-semibold bg-white text-slate-900 hover:bg-slate-100 px-3.5 py-2 rounded-xl transition shadow-sm">
+                    <i class="fa-solid fa-right-to-bracket mr-1 text-indigo-600"></i> Quick Sign-In
+                </a>
+                <a sec:authorize="hasAuthority('ROLE_ADMIN')" href="/admin/inventory" class="text-xs font-semibold bg-amber-500 hover:bg-amber-600 text-slate-950 px-3.5 py-2 rounded-xl transition shadow-sm">
+                    <i class="fa-solid fa-boxes-stacked mr-1"></i> Admin Inventory Panel
+                </a>
+                <a href="/swagger-ui.html" target="_blank" class="text-xs font-semibold bg-slate-800 hover:bg-slate-700 text-indigo-300 border border-slate-700 px-3 py-2 rounded-xl transition">
+                    <i class="fa-solid fa-code mr-1"></i> REST APIs
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Hero Banner -->
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-6">
+        <div class="relative overflow-hidden rounded-3xl bg-gradient-to-br from-indigo-600 via-indigo-700 to-purple-800 text-white shadow-xl">
+            <div class="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(255,255,255,0.15),transparent_50%)]"></div>
+            <div class="relative px-6 py-12 sm:px-12 sm:py-16 max-w-2xl">
+                <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-white/20 text-white backdrop-blur-sm mb-4">
+                    <i class="fa-solid fa-sparkles text-amber-300"></i> Ultra-Fast Digital Checkout
+                </span>
+                <h1 class="text-3xl sm:text-5xl font-extrabold tracking-tight leading-tight">
+                    Engineered for Precision & Modern Life.
+                </h1>
+                <p class="mt-4 text-base sm:text-lg text-indigo-100 leading-relaxed">
+                    Discover premium laptops, audiophile sound gear, and ergonomic workspace tech with live stock validation and instant simulated digital payments.
+                </p>
+                <div class="mt-8 flex flex-wrap gap-3">
+                    <a href="/products" class="px-6 py-3 bg-white text-indigo-700 font-bold rounded-xl shadow-lg hover:bg-slate-100 transition transform hover:-translate-y-0.5">
+                        Explore Catalog <i class="fa-solid fa-arrow-right ml-1 text-sm"></i>
+                    </a>
+                    <a href="#featured-products" class="px-6 py-3 bg-indigo-500/30 hover:bg-indigo-500/40 text-white font-semibold rounded-xl border border-white/20 transition backdrop-blur-sm">
+                        View Featured Items
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Featured Products Section -->
+    <div id="featured-products" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-12">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between pb-6 border-b border-slate-200">
+            <div>
+                <h2 class="text-2xl font-bold tracking-tight text-slate-900">Featured Gear & Tech</h2>
+                <p class="text-sm text-slate-500 mt-1">Curated products with real-time inventory counts and instant digital payment support.</p>
+            </div>
+            <div class="mt-4 sm:mt-0 flex items-center space-x-2">
+                <span class="text-xs text-slate-500 font-medium" th:text="${products.size()} + ' products found'">8 products found</span>
+            </div>
+        </div>
+
+        <!-- Product Cards Grid -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mt-8">
+            <div th:each="product : ${products}"
+                 class="group bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col justify-between">
+                
+                <div>
+                    <!-- Product Image Container -->
+                    <div class="relative h-56 bg-slate-100 overflow-hidden">
+                        <img th:src="${product.imageUrl}" th:alt="${product.name}"
+                             class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
+
+                        <!-- Stock Badge -->
+                        <div class="absolute top-3 left-3">
+                            <span th:if="${product.stockQuantity == 0}"
+                                  class="px-2.5 py-1 text-xs font-bold rounded-lg bg-rose-500 text-white shadow-md flex items-center gap-1">
+                                <i class="fa-solid fa-circle-xmark"></i> Out of Stock
+                            </span>
+                            <span th:if="${product.isLowStock()}"
+                                  class="px-2.5 py-1 text-xs font-bold rounded-lg bg-amber-500 text-white shadow-md flex items-center gap-1">
+                                <i class="fa-solid fa-triangle-exclamation"></i> Only <span th:text="${product.stockQuantity}">3</span> left!
+                            </span>
+                            <span th:if="${product.isInStock() and !product.isLowStock()}"
+                                  class="px-2.5 py-1 text-xs font-bold rounded-lg bg-emerald-500/90 text-white shadow-md backdrop-blur-sm flex items-center gap-1">
+                                <i class="fa-solid fa-circle-check"></i> In Stock (<span th:text="${product.stockQuantity}">15</span>)
+                            </span>
+                        </div>
+
+                        <!-- Category Pill -->
+                        <div class="absolute bottom-3 left-3">
+                            <span th:if="${product.category != null}"
+                                  th:text="${product.category.name}"
+                                  class="px-2 py-0.5 text-[11px] font-semibold rounded-md bg-slate-900/80 text-white backdrop-blur-sm">
+                                Electronics
+                            </span>
+                        </div>
+                    </div>
+
+                    <!-- Product Content -->
+                    <div class="p-5">
+                        <!-- Rating -->
+                        <div class="flex items-center space-x-1 text-amber-400 text-xs mb-1.5">
+                            <i class="fa-solid fa-star"></i>
+                            <span class="font-bold text-slate-700 ml-1" th:text="${product.rating}">4.8</span>
+                            <span class="text-slate-400 text-[11px]" th:text="'(' + ${product.reviewsCount} + ')'">(42)</span>
+                        </div>
+
+                        <!-- Title -->
+                        <h3 class="font-bold text-slate-900 group-hover:text-indigo-600 transition line-clamp-1">
+                            <a th:href="@{'/products/' + ${product.slug}}" th:text="${product.name}">Product Name</a>
+                        </h3>
+
+                        <!-- Description Snippet -->
+                        <p class="text-xs text-slate-500 mt-1.5 line-clamp-2 leading-relaxed" th:text="${product.description}">
+                            Description
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Footer: Price and Add To Cart Form -->
+                <div class="p-5 pt-0 mt-auto">
+                    <div class="flex items-baseline justify-between mb-3">
+                        <div>
+                            <span class="text-xs text-slate-400 font-medium">Price:</span>
+                            <div class="text-xl font-extrabold text-slate-900" th:text="'$' + ${#numbers.formatDecimal(product.price, 1, 'COMMA', 2, 'POINT')}">$299.00</div>
+                        </div>
+                        <span class="text-[10px] font-mono text-slate-400 bg-slate-100 px-1.5 py-0.5 rounded" th:text="${product.sku}">SKU-123</span>
+                    </div>
+
+                    <!-- Add to Cart / Out of Stock Form -->
+                    <div sec:authorize="isAuthenticated()">
+                        <form th:if="${product.isInStock()}" th:action="@{/cart/add}" method="POST">
+                            <input type="hidden" name="productId" th:value="${product.id}">
+                            <input type="hidden" name="quantity" value="1">
+                            <input type="hidden" name="redirectUrl" value="/">
+                            <button type="submit"
+                                    class="w-full bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 text-white font-semibold py-2.5 px-4 rounded-xl shadow-sm hover:shadow-md transition flex items-center justify-center space-x-2 text-sm">
+                                <i class="fa-solid fa-cart-plus"></i>
+                                <span>Add to Cart</span>
+                            </button>
+                        </form>
+                        <button th:if="${!product.isInStock()}" disabled
+                                class="w-full bg-slate-200 text-slate-400 font-semibold py-2.5 px-4 rounded-xl cursor-not-allowed flex items-center justify-center space-x-2 text-sm">
+                            <i class="fa-solid fa-ban"></i>
+                            <span>Sold Out</span>
+                        </button>
+                    </div>
+
+                    <div sec:authorize="!isAuthenticated()">
+                        <a href="/login"
+                           class="w-full bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 font-semibold py-2.5 px-4 rounded-xl transition flex items-center justify-center space-x-2 text-sm">
+                            <i class="fa-solid fa-lock"></i>
+                            <span>Sign In to Buy</span>
+                        </a>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- Platform Value Highlights -->
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-20">
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+            <div class="p-6 bg-white rounded-2xl border border-slate-200 text-center">
+                <div class="w-12 h-12 mx-auto rounded-2xl bg-indigo-50 text-indigo-600 flex items-center justify-center text-xl mb-4">
+                    <i class="fa-solid fa-bolt"></i>
+                </div>
+                <h4 class="font-bold text-slate-900 mb-1">Instant Digital Payments</h4>
+                <p class="text-xs text-slate-500 leading-relaxed">Integrated Card, UPI QR, and Apple Pay/Google Pay biometric mock authorization rails.</p>
+            </div>
+            <div class="p-6 bg-white rounded-2xl border border-slate-200 text-center">
+                <div class="w-12 h-12 mx-auto rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center text-xl mb-4">
+                    <i class="fa-solid fa-boxes-packing"></i>
+                </div>
+                <h4 class="font-bold text-slate-900 mb-1">Atomic Inventory Lock</h4>
+                <p class="text-xs text-slate-500 leading-relaxed">Stock is validated and safely decremented on checkout. Zero overselling guarantees.</p>
+            </div>
+            <div class="p-6 bg-white rounded-2xl border border-slate-200 text-center">
+                <div class="w-12 h-12 mx-auto rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center text-xl mb-4">
+                    <i class="fa-solid fa-shield-halved"></i>
+                </div>
+                <h4 class="font-bold text-slate-900 mb-1">Spring Security 6</h4>
+                <p class="text-xs text-slate-500 leading-relaxed">BCrypt password hashing, role-based customer & admin authorization boundaries.</p>
+            </div>
+            <div class="p-6 bg-white rounded-2xl border border-slate-200 text-center">
+                <div class="w-12 h-12 mx-auto rounded-2xl bg-violet-50 text-violet-600 flex items-center justify-center text-xl mb-4">
+                    <i class="fa-solid fa-code-branch"></i>
+                </div>
+                <h4 class="font-bold text-slate-900 mb-1">Java 21 Modern Engine</h4>
+                <p class="text-xs text-slate-500 leading-relaxed">Leverages records, modern switch expressions, and Spring Data JPA with H2.</p>
+            </div>
+        </div>
+    </div>
+</main>
+
+<footer th:replace="~{fragments/footer :: footer}"></footer>
+
+</body>
+</html>

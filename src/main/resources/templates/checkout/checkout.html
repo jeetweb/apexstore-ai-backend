@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/header :: head('Checkout & Digital Payment')}"></head>
+<body class="bg-slate-50 text-slate-800 flex flex-col min-h-screen">
+
+<header th:replace="~{fragments/header :: navbar}"></header>
+
+<main class="flex-grow max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full">
+    <!-- Breadcrumbs -->
+    <nav class="flex text-xs text-slate-500 mb-6" aria-label="Breadcrumb">
+        <ol class="inline-flex items-center space-x-1 md:space-x-2">
+            <li><a href="/" class="hover:text-indigo-600">Home</a></li>
+            <li><i class="fa-solid fa-chevron-right text-[10px] text-slate-400"></i></li>
+            <li><a href="/cart" class="hover:text-indigo-600">Cart</a></li>
+            <li><i class="fa-solid fa-chevron-right text-[10px] text-slate-400"></i></li>
+            <li class="font-medium text-slate-800">Checkout & Digital Payment</li>
+        </ol>
+    </nav>
+
+    <!-- Error Banner -->
+    <div th:if="${errorMessage}" class="p-4 mb-6 text-sm text-rose-800 rounded-2xl bg-rose-50 border border-rose-200 flex items-center shadow-sm">
+        <i class="fa-solid fa-triangle-exclamation text-lg mr-3 text-rose-500 flex-shrink-0"></i>
+        <div>
+            <div class="font-bold">Transaction / Stock Alert</div>
+            <div th:text="${errorMessage}">Error processing payment.</div>
+        </div>
+    </div>
+
+    <!-- Stepper indicator -->
+    <div class="mb-8 max-w-3xl mx-auto">
+        <div class="flex items-center justify-between text-xs font-bold text-slate-400">
+            <div class="flex items-center text-indigo-600">
+                <span class="w-7 h-7 rounded-full bg-indigo-600 text-white flex items-center justify-center mr-2 text-xs">1</span>
+                <span>Cart</span>
+            </div>
+            <div class="flex-1 h-0.5 bg-indigo-600 mx-2"></div>
+            <div class="flex items-center text-indigo-600">
+                <span class="w-7 h-7 rounded-full bg-indigo-600 text-white flex items-center justify-center mr-2 text-xs">2</span>
+                <span>Shipping</span>
+            </div>
+            <div class="flex-1 h-0.5 bg-indigo-600 mx-2"></div>
+            <div class="flex items-center text-indigo-600">
+                <span class="w-7 h-7 rounded-full bg-indigo-600 text-white flex items-center justify-center mr-2 text-xs">3</span>
+                <span>Digital Payment</span>
+            </div>
+            <div class="flex-1 h-0.5 bg-slate-200 mx-2"></div>
+            <div class="flex items-center text-slate-400">
+                <span class="w-7 h-7 rounded-full bg-slate-200 text-slate-600 flex items-center justify-center mr-2 text-xs">4</span>
+                <span>Receipt</span>
+            </div>
+        </div>
+    </div>
+
+    <form th:action="@{/checkout/process}" th:object="${checkoutRequest}" method="POST" id="checkoutForm">
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
+            
+            <!-- Left: Shipping & Payment Options (2 Cols) -->
+            <div class="lg:col-span-2 space-y-6">
+                
+                <!-- Section 1: Shipping Address -->
+                <div class="bg-white rounded-3xl border border-slate-200 shadow-sm p-6 sm:p-8">
+                    <div class="flex items-center justify-between pb-4 border-b border-slate-100">
+                        <div class="flex items-center space-x-3">
+                            <div class="w-8 h-8 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center font-bold text-sm">
+                                1
+                            </div>
+                            <h2 class="text-lg font-bold text-slate-900">Shipping Information</h2>
+                        </div>
+                        <span class="text-xs text-slate-400"><i class="fa-solid fa-lock text-emerald-500 mr-1"></i> Encrypted</span>
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-6">
+                        <div class="sm:col-span-2">
+                            <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">Recipient Full Name *</label>
+                            <input type="text" th:field="*{fullName}" required placeholder="John Doe"
+                                   class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white transition">
+                            <p th:if="${#fields.hasErrors('fullName')}" th:errors="*{fullName}" class="text-rose-500 text-xs mt-1"></p>
+                        </div>
+
+                        <div class="sm:col-span-2">
+                            <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">Street Address *</label>
+                            <input type="text" th:field="*{streetAddress}" required placeholder="742 Evergreen Terrace, Apt 4B"
+                                   class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white transition">
+                            <p th:if="${#fields.hasErrors('streetAddress')}" th:errors="*{streetAddress}" class="text-rose-500 text-xs mt-1"></p>
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">City *</label>
+                            <input type="text" th:field="*{city}" required placeholder="Springfield"
+                                   class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white transition">
+                            <p th:if="${#fields.hasErrors('city')}" th:errors="*{city}" class="text-rose-500 text-xs mt-1"></p>
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">State / Province *</label>
+                            <input type="text" th:field="*{state}" required placeholder="Oregon"
+                                   class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white transition">
+                            <p th:if="${#fields.hasErrors('state')}" th:errors="*{state}" class="text-rose-500 text-xs mt-1"></p>
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">Postal / ZIP Code *</label>
+                            <input type="text" th:field="*{postalCode}" required placeholder="97477"
+                                   class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white transition">
+                            <p th:if="${#fields.hasErrors('postalCode')}" th:errors="*{postalCode}" class="text-rose-500 text-xs mt-1"></p>
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">Phone Number *</label>
+                            <input type="tel" th:field="*{phone}" required placeholder="+1 (555) 234-5678"
+                                   class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white transition">
+                            <p th:if="${#fields.hasErrors('phone')}" th:errors="*{phone}" class="text-rose-500 text-xs mt-1"></p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Section 2: Delivery Speed Option -->
+                <div class="bg-white rounded-3xl border border-slate-200 shadow-sm p-6 sm:p-8">
+                    <div class="flex items-center space-x-3 pb-4 border-b border-slate-100">
+                        <div class="w-8 h-8 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center font-bold text-sm">
+                            2
+                        </div>
+                        <h2 class="text-lg font-bold text-slate-900">Delivery Speed</h2>
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-6">
+                        <label class="relative flex items-center p-4 border rounded-2xl cursor-pointer hover:bg-slate-50 transition border-indigo-500 bg-indigo-50/30">
+                            <input type="radio" th:field="*{shippingMethod}" value="STANDARD" class="text-indigo-600 focus:ring-indigo-500 h-4 w-4">
+                            <div class="ml-3">
+                                <div class="text-sm font-bold text-slate-900">Standard Delivery</div>
+                                <div class="text-xs text-slate-500">3-5 business days &bull; Free over $50</div>
+                            </div>
+                            <span class="ml-auto text-xs font-bold text-emerald-600" th:text="${subtotal.compareTo(T(java.math.BigDecimal).valueOf(50)) >= 0} ? 'FREE' : '$5.99'">FREE</span>
+                        </label>
+
+                        <label class="relative flex items-center p-4 border rounded-2xl cursor-pointer hover:bg-slate-50 transition border-slate-200">
+                            <input type="radio" th:field="*{shippingMethod}" value="EXPRESS" class="text-indigo-600 focus:ring-indigo-500 h-4 w-4">
+                            <div class="ml-3">
+                                <div class="text-sm font-bold text-slate-900">Priority Express</div>
+                                <div class="text-xs text-slate-500">1-2 business days &bull; Real-time tracking</div>
+                            </div>
+                            <span class="ml-auto text-xs font-bold text-slate-900">$19.99</span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Section 3: Digital Payment Gateway Selector -->
+                <div class="bg-white rounded-3xl border border-slate-200 shadow-sm p-6 sm:p-8">
+                    <div class="flex items-center justify-between pb-4 border-b border-slate-100">
+                        <div class="flex items-center space-x-3">
+                            <div class="w-8 h-8 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center font-bold text-sm">
+                                3
+                            </div>
+                            <h2 class="text-lg font-bold text-slate-900">Digital Payment Method</h2>
+                        </div>
+                        <span class="text-xs bg-indigo-50 text-indigo-700 px-2.5 py-1 rounded-full font-bold">Mock Gateway Simulator</span>
+                    </div>
+
+                    <!-- Payment Method Tabs -->
+                    <div class="grid grid-cols-3 gap-3 mt-6">
+                        <label class="payment-tab flex flex-col items-center p-3 sm:p-4 rounded-2xl border-2 cursor-pointer transition text-center border-indigo-600 bg-indigo-50/40 text-indigo-900" id="tab-card">
+                            <input type="radio" th:field="*{paymentMethod}" value="CREDIT_CARD" class="sr-only" onchange="switchPaymentTab('CREDIT_CARD')">
+                            <i class="fa-regular fa-credit-card text-2xl text-indigo-600 mb-1.5"></i>
+                            <span class="text-xs font-bold">Credit/Debit Card</span>
+                            <span class="text-[10px] text-slate-500">Visa, MC, Amex</span>
+                        </label>
+
+                        <label class="payment-tab flex flex-col items-center p-3 sm:p-4 rounded-2xl border-2 cursor-pointer transition text-center border-slate-200 hover:bg-slate-50 text-slate-700" id="tab-upi">
+                            <input type="radio" th:field="*{paymentMethod}" value="UPI" class="sr-only" onchange="switchPaymentTab('UPI')">
+                            <i class="fa-solid fa-qrcode text-2xl text-emerald-600 mb-1.5"></i>
+                            <span class="text-xs font-bold">UPI / Instant QR</span>
+                            <span class="text-[10px] text-slate-500">GPay, PhonePe, BHIM</span>
+                        </label>
+
+                        <label class="payment-tab flex flex-col items-center p-3 sm:p-4 rounded-2xl border-2 cursor-pointer transition text-center border-slate-200 hover:bg-slate-50 text-slate-700" id="tab-wallet">
+                            <input type="radio" th:field="*{paymentMethod}" value="DIGITAL_WALLET" class="sr-only" onchange="switchPaymentTab('DIGITAL_WALLET')">
+                            <i class="fa-brands fa-apple text-2xl text-slate-900 mb-1.5"></i>
+                            <span class="text-xs font-bold">Digital Wallet</span>
+                            <span class="text-[10px] text-slate-500">Apple Pay, PayPal</span>
+                        </label>
+                    </div>
+
+                    <!-- Payment Details Sub-Containers -->
+
+                    <!-- 1. Card Container -->
+                    <div id="payment-card-fields" class="mt-6 p-5 rounded-2xl bg-slate-50 border border-slate-200/80">
+                        <div class="flex items-center justify-between mb-4">
+                            <h4 class="text-xs font-bold text-slate-800 uppercase tracking-wider">Card Details</h4>
+                            <div class="flex items-center gap-2">
+                                <button type="button" onclick="fillTestCard(true)" class="text-[11px] font-semibold text-indigo-600 bg-indigo-50 border border-indigo-200 hover:bg-indigo-100 px-2.5 py-1 rounded-lg transition">
+                                    <i class="fa-solid fa-wand-magic-sparkles mr-1"></i> Fill Valid Card
+                                </button>
+                                <button type="button" onclick="fillTestCard(false)" class="text-[11px] font-semibold text-rose-600 bg-rose-50 border border-rose-200 hover:bg-rose-100 px-2 py-1 rounded-lg transition" title="Fills a card that simulates bank decline">
+                                    Simulate Decline
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Card Number</label>
+                                <div class="relative">
+                                    <input type="text" th:field="*{cardNumber}" id="cardNumInput" placeholder="4242 4242 4242 4242"
+                                           class="w-full px-4 py-2.5 pl-10 bg-white border border-slate-300 rounded-xl text-sm font-mono focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                                    <i class="fa-regular fa-credit-card absolute left-3.5 top-3 text-slate-400"></i>
+                                </div>
+                            </div>
+
+                            <div class="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Expiration (MM/YY)</label>
+                                    <input type="text" th:field="*{cardExpiry}" id="cardExpInput" placeholder="12/28"
+                                           class="w-full px-4 py-2.5 bg-white border border-slate-300 rounded-xl text-sm font-mono focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">CVV / CVC</label>
+                                    <input type="password" th:field="*{cardCvv}" id="cardCvvInput" maxlength="4" placeholder="123"
+                                           class="w-full px-4 py-2.5 bg-white border border-slate-300 rounded-xl text-sm font-mono focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                                </div>
+                            </div>
+
+                            <div>
+                                <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Name on Card</label>
+                                <input type="text" th:field="*{cardHolderName}" id="cardNameInput" placeholder="Johnathan Doe"
+                                       class="w-full px-4 py-2.5 bg-white border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 2. UPI Container -->
+                    <div id="payment-upi-fields" class="mt-6 p-5 rounded-2xl bg-slate-50 border border-slate-200/80 hidden">
+                        <div class="flex items-center justify-between mb-4">
+                            <h4 class="text-xs font-bold text-slate-800 uppercase tracking-wider">UPI / QR Code Checkout</h4>
+                            <button type="button" onclick="fillTestUpi()" class="text-[11px] font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200 hover:bg-emerald-100 px-2.5 py-1 rounded-lg transition">
+                                <i class="fa-solid fa-wand-magic-sparkles mr-1"></i> Fill Test UPI
+                            </button>
+                        </div>
+
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 items-center">
+                            <!-- UPI ID Input -->
+                            <div>
+                                <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Enter UPI VPA / ID</label>
+                                <div class="relative">
+                                    <input type="text" th:field="*{upiId}" id="upiInput" placeholder="username@okhdfcbank"
+                                           class="w-full px-4 py-2.5 pl-10 bg-white border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                                    <i class="fa-solid fa-at absolute left-3.5 top-3 text-slate-400"></i>
+                                </div>
+                                <p class="text-[11px] text-slate-500 mt-2">
+                                    A collect payment request will be simulated and auto-approved instantly.
+                                </p>
+                            </div>
+
+                            <!-- Dynamic QR Code Card -->
+                            <div class="p-4 bg-white rounded-2xl border border-slate-200 text-center shadow-sm">
+                                <div class="text-[11px] font-bold text-slate-700 uppercase mb-2">Scan & Pay via Mobile</div>
+                                <div class="w-32 h-32 mx-auto bg-slate-900 rounded-xl flex items-center justify-center text-white p-2">
+                                    <!-- QR Visual Graphic -->
+                                    <div class="w-full h-full border-4 border-dashed border-emerald-400 rounded-lg flex flex-col items-center justify-center p-1">
+                                        <i class="fa-solid fa-qrcode text-4xl text-emerald-300"></i>
+                                        <span class="text-[9px] font-mono text-emerald-200 mt-1">UPI-APEX-PAY</span>
+                                    </div>
+                                </div>
+                                <span class="inline-block mt-2 text-[10px] text-slate-400">Supported by all UPI apps</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 3. Wallet Container -->
+                    <div id="payment-wallet-fields" class="mt-6 p-5 rounded-2xl bg-slate-50 border border-slate-200/80 hidden">
+                        <div class="mb-4">
+                            <h4 class="text-xs font-bold text-slate-800 uppercase tracking-wider">One-Touch Biometric Wallet</h4>
+                            <p class="text-xs text-slate-500 mt-1">Instant digital tokenized payment through your device wallet.</p>
+                        </div>
+
+                        <div class="space-y-3">
+                            <label class="flex items-center justify-between p-3.5 bg-white border border-slate-200 rounded-xl cursor-pointer hover:border-indigo-400 transition">
+                                <div class="flex items-center space-x-3">
+                                    <input type="radio" th:field="*{walletProvider}" value="Apple Pay" checked class="text-indigo-600 focus:ring-indigo-500">
+                                    <div class="flex items-center space-x-2">
+                                        <i class="fa-brands fa-apple text-xl text-slate-900"></i>
+                                        <span class="text-xs font-bold text-slate-800">Apple Pay (Touch ID / Face ID)</span>
+                                    </div>
+                                </div>
+                                <span class="text-[10px] bg-slate-100 text-slate-600 px-2 py-0.5 rounded font-mono">1-Touch Active</span>
+                            </label>
+
+                            <label class="flex items-center justify-between p-3.5 bg-white border border-slate-200 rounded-xl cursor-pointer hover:border-indigo-400 transition">
+                                <div class="flex items-center space-x-3">
+                                    <input type="radio" th:field="*{walletProvider}" value="Google Pay" class="text-indigo-600 focus:ring-indigo-500">
+                                    <div class="flex items-center space-x-2">
+                                        <i class="fa-brands fa-google-pay text-xl text-amber-500"></i>
+                                        <span class="text-xs font-bold text-slate-800">Google Pay</span>
+                                    </div>
+                                </div>
+                                <span class="text-[10px] bg-slate-100 text-slate-600 px-2 py-0.5 rounded font-mono">Tokenized</span>
+                            </label>
+
+                            <label class="flex items-center justify-between p-3.5 bg-white border border-slate-200 rounded-xl cursor-pointer hover:border-indigo-400 transition">
+                                <div class="flex items-center space-x-3">
+                                    <input type="radio" th:field="*{walletProvider}" value="PayPal Express" class="text-indigo-600 focus:ring-indigo-500">
+                                    <div class="flex items-center space-x-2">
+                                        <i class="fa-brands fa-paypal text-xl text-sky-500"></i>
+                                        <span class="text-xs font-bold text-slate-800">PayPal Express Checkout</span>
+                                    </div>
+                                </div>
+                                <span class="text-[10px] bg-slate-100 text-slate-600 px-2 py-0.5 rounded font-mono">Instant Auth</span>
+                            </label>
+                        </div>
+                    </div>
+
+                </div>
+
+            </div>
+
+            <!-- Right: Order Review & Submit (1 Col) -->
+            <div class="lg:col-span-1">
+                <div class="bg-white rounded-3xl border border-slate-200 shadow-sm p-6 sticky top-24">
+                    <h2 class="text-lg font-bold text-slate-900 tracking-tight pb-4 border-b border-slate-100">Review & Pay</h2>
+
+                    <!-- Items snapshot -->
+                    <div class="max-h-56 overflow-y-auto divide-y divide-slate-100 py-3">
+                        <div th:each="item : ${cart.items}" class="py-2.5 flex items-center justify-between text-xs">
+                            <div class="flex items-center space-x-2 truncate pr-2">
+                                <span class="font-bold text-indigo-600" th:text="${item.quantity} + 'x'">1x</span>
+                                <span class="text-slate-800 truncate" th:text="${item.product.name}">Product Name</span>
+                            </div>
+                            <span class="font-bold text-slate-900 flex-shrink-0" th:text="'$' + ${#numbers.formatDecimal(item.subtotal, 1, 'COMMA', 2, 'POINT')}">$299.00</span>
+                        </div>
+                    </div>
+
+                    <!-- Price breakdown -->
+                    <div class="space-y-2.5 py-4 border-t border-b border-slate-100 text-xs">
+                        <div class="flex justify-between text-slate-600">
+                            <span>Subtotal:</span>
+                            <span class="font-bold text-slate-900" th:text="'$' + ${#numbers.formatDecimal(subtotal, 1, 'COMMA', 2, 'POINT')}">$299.00</span>
+                        </div>
+                        <div class="flex justify-between text-slate-600">
+                            <span>Shipping:</span>
+                            <span class="font-bold text-slate-900" th:text="${shipping.compareTo(T(java.math.BigDecimal).ZERO) == 0} ? 'FREE' : '$' + ${#numbers.formatDecimal(shipping, 1, 'COMMA', 2, 'POINT')}">FREE</span>
+                        </div>
+                        <div class="flex justify-between text-slate-600">
+                            <span>Estimated Tax (8%):</span>
+                            <span class="font-bold text-slate-900" th:text="'$' + ${#numbers.formatDecimal(tax, 1, 'COMMA', 2, 'POINT')}">$23.92</span>
+                        </div>
+                    </div>
+
+                    <div class="py-4 flex justify-between items-baseline">
+                        <div class="text-sm font-bold text-slate-900">Total Charged:</div>
+                        <div class="text-2xl font-black text-indigo-600" th:text="'$' + ${#numbers.formatDecimal(total, 1, 'COMMA', 2, 'POINT')}">$322.92</div>
+                    </div>
+
+                    <!-- Submit Button -->
+                    <button type="submit" id="submitBtn"
+                            class="w-full bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 text-white font-extrabold py-4 px-4 rounded-xl shadow-lg shadow-indigo-600/30 transition flex items-center justify-center space-x-2 text-base">
+                        <i class="fa-solid fa-lock text-sm"></i>
+                        <span>Authorize & Place Order</span>
+                    </button>
+
+                    <div class="mt-4 text-center">
+                        <span class="text-[11px] text-slate-400 flex items-center justify-center gap-1.5">
+                            <i class="fa-solid fa-shield-halved text-emerald-500"></i>
+                            Simulated real-time digital bank settlement
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </form>
+</main>
+
+<script>
+    function switchPaymentTab(method) {
+        document.querySelectorAll('.payment-tab').forEach(tab => {
+            tab.classList.remove('border-indigo-600', 'bg-indigo-50/40', 'text-indigo-900');
+            tab.classList.add('border-slate-200', 'text-slate-700');
+        });
+
+        document.getElementById('payment-card-fields').classList.add('hidden');
+        document.getElementById('payment-upi-fields').classList.add('hidden');
+        document.getElementById('payment-wallet-fields').classList.add('hidden');
+
+        if (method === 'CREDIT_CARD' || method === 'DEBIT_CARD') {
+            const tab = document.getElementById('tab-card');
+            tab.classList.remove('border-slate-200', 'text-slate-700');
+            tab.classList.add('border-indigo-600', 'bg-indigo-50/40', 'text-indigo-900');
+            document.getElementById('payment-card-fields').classList.remove('hidden');
+            fillTestCard(true);
+        } else if (method === 'UPI') {
+            const tab = document.getElementById('tab-upi');
+            tab.classList.remove('border-slate-200', 'text-slate-700');
+            tab.classList.add('border-indigo-600', 'bg-indigo-50/40', 'text-indigo-900');
+            document.getElementById('payment-upi-fields').classList.remove('hidden');
+            fillTestUpi();
+        } else if (method === 'DIGITAL_WALLET') {
+            const tab = document.getElementById('tab-wallet');
+            tab.classList.remove('border-slate-200', 'text-slate-700');
+            tab.classList.add('border-indigo-600', 'bg-indigo-50/40', 'text-indigo-900');
+            document.getElementById('payment-wallet-fields').classList.remove('hidden');
+        }
+    }
+
+    function fillTestCard(success) {
+        document.getElementById('cardNumInput').value = success ? '4242 4242 4242 4242' : '4242 4242 4242 0000';
+        document.getElementById('cardExpInput').value = '12/28';
+        document.getElementById('cardCvvInput').value = success ? '123' : '999';
+        document.getElementById('cardNameInput').value = 'John Doe';
+    }
+
+    function fillTestUpi() {
+        document.getElementById('upiInput').value = 'johndoe@okhdfcbank';
+    }
+
+    // Initialize with test card on first load
+    window.addEventListener('DOMContentLoaded', () => {
+        fillTestCard(true);
+    });
+</script>
+
+<footer th:replace="~{fragments/footer :: footer}"></footer>
+
+</body>
+</html>

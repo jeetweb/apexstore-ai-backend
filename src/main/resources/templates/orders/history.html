@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/header :: head('My Orders')}"></head>
+<body class="bg-slate-50 text-slate-800 flex flex-col min-h-screen">
+
+<header th:replace="~{fragments/header :: navbar}"></header>
+
+<main class="flex-grow max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full">
+    <!-- Breadcrumbs -->
+    <nav class="flex text-xs text-slate-500 mb-6" aria-label="Breadcrumb">
+        <ol class="inline-flex items-center space-x-1 md:space-x-2">
+            <li><a href="/" class="hover:text-indigo-600">Home</a></li>
+            <li><i class="fa-solid fa-chevron-right text-[10px] text-slate-400"></i></li>
+            <li class="font-medium text-slate-800">Order History</li>
+        </ol>
+    </nav>
+
+    <div class="pb-6 border-b border-slate-200">
+        <h1 class="text-3xl font-extrabold text-slate-900 tracking-tight">Your Order History</h1>
+        <p class="text-sm text-slate-500 mt-1">Track digital payment receipts, shipping statuses, and past gear purchases.</p>
+    </div>
+
+    <!-- Empty state -->
+    <div th:if="${orders.isEmpty()}" class="my-16 text-center py-16 bg-white rounded-3xl border border-slate-200 shadow-sm max-w-xl mx-auto">
+        <div class="w-16 h-16 mx-auto rounded-full bg-indigo-50 flex items-center justify-center text-indigo-500 text-2xl mb-4">
+            <i class="fa-solid fa-receipt"></i>
+        </div>
+        <h3 class="text-lg font-bold text-slate-900">No orders placed yet</h3>
+        <p class="text-sm text-slate-500 mt-1 max-w-sm mx-auto">Once you check out and complete digital payment, your orders and tracking info will appear here.</p>
+        <div class="mt-6">
+            <a href="/products" class="inline-flex items-center px-5 py-2.5 bg-indigo-600 text-white rounded-xl text-xs font-bold hover:bg-indigo-700 transition">
+                Start Shopping
+            </a>
+        </div>
+    </div>
+
+    <!-- Orders List -->
+    <div th:if="${!orders.isEmpty()}" class="mt-8 space-y-6">
+        <div th:each="order : ${orders}" class="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden hover:border-slate-300 transition">
+            
+            <!-- Order Header -->
+            <div class="bg-slate-50/70 p-5 border-b border-slate-200/80 flex flex-wrap items-center justify-between gap-4 text-xs">
+                <div class="flex items-center space-x-4">
+                    <div>
+                        <span class="text-slate-400 font-medium">Order Placed</span>
+                        <div class="font-bold text-slate-800 mt-0.5" th:text="${#temporals.format(order.orderDate, 'MMM dd, yyyy HH:mm')}">Sep 24, 2026</div>
+                    </div>
+                    <div class="border-l border-slate-200 pl-4">
+                        <span class="text-slate-400 font-medium">Order Number</span>
+                        <div class="font-mono font-bold text-indigo-600 mt-0.5" th:text="${order.orderNumber}">ORD-1234</div>
+                    </div>
+                </div>
+
+                <div class="flex items-center space-x-4">
+                    <div>
+                        <span class="text-slate-400 font-medium">Total Settled</span>
+                        <div class="font-black text-slate-900 mt-0.5" th:text="'$' + ${#numbers.formatDecimal(order.totalAmount, 1, 'COMMA', 2, 'POINT')}">$299.00</div>
+                    </div>
+                    <div>
+                        <!-- Status Badge -->
+                        <span th:if="${order.status.name() == 'PAID' or order.status.name() == 'DELIVERED'}"
+                              class="px-3 py-1 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800 flex items-center gap-1">
+                            <i class="fa-solid fa-circle-check text-[10px]"></i> <span th:text="${order.status.displayName}">Paid</span>
+                        </span>
+                        <span th:if="${order.status.name() == 'PROCESSING' or order.status.name() == 'SHIPPED'}"
+                              class="px-3 py-1 rounded-full text-xs font-bold bg-blue-100 text-blue-800 flex items-center gap-1">
+                            <i class="fa-solid fa-truck-fast text-[10px]"></i> <span th:text="${order.status.displayName}">Shipped</span>
+                        </span>
+                        <span th:if="${order.status.name() == 'CANCELLED' or order.status.name() == 'PENDING_PAYMENT'}"
+                              class="px-3 py-1 rounded-full text-xs font-bold bg-rose-100 text-rose-800 flex items-center gap-1">
+                            <i class="fa-solid fa-circle-xmark text-[10px]"></i> <span th:text="${order.status.displayName}">Pending</span>
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Order Body -->
+            <div class="p-6">
+                <div class="space-y-4">
+                    <div th:each="item : ${order.items}" class="flex items-center justify-between text-xs">
+                        <div class="flex items-center space-x-3">
+                            <img th:if="${item.productImageUrl != null and !item.productImageUrl.isBlank()}" th:src="${item.productImageUrl}"
+                                 class="w-14 h-14 rounded-xl object-cover border border-slate-100 flex-shrink-0">
+                            <div>
+                                <h4 class="font-bold text-slate-900 text-sm" th:text="${item.productName}">Product Name</h4>
+                                <div class="text-slate-400 mt-0.5">
+                                    Qty: <strong class="text-slate-700" th:text="${item.quantity}">1</strong> &bull;
+                                    Price: <span th:text="'$' + ${#numbers.formatDecimal(item.unitPrice, 1, 'COMMA', 2, 'POINT')}">$299.00</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="font-extrabold text-slate-900 text-sm" th:text="'$' + ${#numbers.formatDecimal(item.subtotal, 1, 'COMMA', 2, 'POINT')}">$299.00</div>
+                    </div>
+                </div>
+
+                <!-- Footer details & button -->
+                <div class="mt-6 pt-4 border-t border-slate-100 flex flex-wrap items-center justify-between gap-3 text-xs text-slate-500">
+                    <div class="flex items-center space-x-4">
+                        <span th:if="${order.payment != null}">
+                            <i class="fa-solid fa-credit-card text-indigo-500 mr-1"></i> Paid with <strong class="text-slate-700" th:text="${order.payment.paymentMethod.displayName}">Card</strong>
+                            (<span class="font-mono text-[11px]" th:text="${order.payment.transactionId}">TXN-123</span>)
+                        </span>
+                        <span th:if="${order.trackingNumber != null}" class="font-mono text-[11px] bg-slate-100 px-2 py-0.5 rounded">
+                            <i class="fa-solid fa-barcode text-slate-400 mr-1"></i> <span th:text="${order.trackingNumber}">TRK-001</span>
+                        </span>
+                    </div>
+
+                    <a th:href="@{'/orders/' + ${order.orderNumber}}"
+                       class="px-4 py-2 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-bold rounded-xl transition flex items-center space-x-1.5">
+                        <span>View Order Details</span>
+                        <i class="fa-solid fa-chevron-right text-[10px]"></i>
+                    </a>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</main>
+
+<footer th:replace="~{fragments/footer :: footer}"></footer>
+
+</body>
+</html>

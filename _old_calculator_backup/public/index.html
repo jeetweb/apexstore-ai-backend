@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Smart AI Calculator</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div class="app-container">
+    <!-- Header -->
+    <header class="app-header">
+      <div class="logo">
+        <span class="icon">🧮</span>
+        <h1>AI Calculator</h1>
+      </div>
+      <p class="tagline">Math made simple, explained with Gemini AI</p>
+    </header>
+
+    <main class="main-content">
+      <!-- Calculator Box -->
+      <section class="calculator-card">
+        <div class="calculator-screen">
+          <div class="screen-history" id="screenHistory">&nbsp;</div>
+          <div class="screen-main" id="screenMain">0</div>
+        </div>
+
+        <div class="keypad">
+          <button type="button" class="btn btn-secondary" data-action="all-clear">AC</button>
+          <button type="button" class="btn btn-secondary" data-action="backspace">⌫</button>
+          <button type="button" class="btn btn-secondary" data-action="percent">%</button>
+          <button type="button" class="btn btn-operator" data-operator="÷">÷</button>
+
+          <button type="button" class="btn btn-num" data-num="7">7</button>
+          <button type="button" class="btn btn-num" data-num="8">8</button>
+          <button type="button" class="btn btn-num" data-num="9">9</button>
+          <button type="button" class="btn btn-operator" data-operator="×">×</button>
+
+          <button type="button" class="btn btn-num" data-num="4">4</button>
+          <button type="button" class="btn btn-num" data-num="5">5</button>
+          <button type="button" class="btn btn-num" data-num="6">6</button>
+          <button type="button" class="btn btn-operator" data-operator="-">−</button>
+
+          <button type="button" class="btn btn-num" data-num="1">1</button>
+          <button type="button" class="btn btn-num" data-num="2">2</button>
+          <button type="button" class="btn btn-num" data-num="3">3</button>
+          <button type="button" class="btn btn-operator" data-operator="+">+</button>
+
+          <button type="button" class="btn btn-num" data-action="negate">±</button>
+          <button type="button" class="btn btn-num" data-num="0">0</button>
+          <button type="button" class="btn btn-num" data-action="decimal">.</button>
+          <button type="button" class="btn btn-equals" data-action="equals">=</button>
+        </div>
+
+        <div class="ai-button-container">
+          <button type="button" id="explainBtn" class="btn-ai">
+            <span class="sparkle">✨</span> Explain with Gemini AI
+          </button>
+        </div>
+      </section>
+
+      <!-- AI Story Panel -->
+      <section class="story-card">
+        <div class="story-header">
+          <div class="story-title">
+            <span class="ai-badge">AI Story</span>
+            <span id="lastCalculationBadge" class="calc-badge">Ready</span>
+          </div>
+          <button type="button" id="toggleKeySettings" class="btn-text-link">
+            ⚙️ Key Settings
+          </button>
+        </div>
+
+        <!-- Optional In-Browser API Key Drawer -->
+        <div id="apiKeyDrawer" class="api-key-drawer hidden">
+          <label for="apiKeyInput">Gemini API Key (Optional):</label>
+          <div class="key-input-group">
+            <input type="password" id="apiKeyInput" placeholder="AIzaSy... (leave blank if set via GEMINI_API_KEY env var)" autocomplete="off">
+            <button type="button" id="saveKeyBtn" class="btn-small">Save</button>
+            <button type="button" id="clearKeyBtn" class="btn-small btn-outline">Clear</button>
+          </div>
+          <p class="key-help">Stored locally in your browser so you don't have to re-enter it. Or export <code>GEMINI_API_KEY</code> in your terminal before running the server.</p>
+        </div>
+
+        <!-- Story Content Area -->
+        <div id="storyContent" class="story-content">
+          <div class="story-placeholder">
+            <div class="bubble-icon">💡</div>
+            <p>Perform any calculation above and click <strong>"Explain with Gemini AI"</strong> to turn the math into a fun, real-world story!</p>
+            <span class="hint">Example: <em>"3 potatoes put together with 2 more gives 5 total potatoes!"</em></span>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="app-footer">
+      <div class="keyboard-hints">
+        <span>⌨️ <strong>Shortcuts:</strong> Numbers <code>0-9</code>, <code>+</code> <code>-</code> <code>*</code> <code>/</code>, <code>Enter</code> (=), <code>Backspace</code>, <code>Esc</code> (Clear)</span>
+      </div>
+    </footer>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>

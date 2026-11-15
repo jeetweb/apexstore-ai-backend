@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/header :: head('Order ' + ${order.orderNumber})}"></head>
+<body class="bg-slate-50 text-slate-800 flex flex-col min-h-screen">
+
+<header th:replace="~{fragments/header :: navbar}"></header>
+
+<main class="flex-grow max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full">
+    <!-- Breadcrumbs -->
+    <nav class="flex text-xs text-slate-500 mb-6" aria-label="Breadcrumb">
+        <ol class="inline-flex items-center space-x-1 md:space-x-2">
+            <li><a href="/" class="hover:text-indigo-600">Home</a></li>
+            <li><i class="fa-solid fa-chevron-right text-[10px] text-slate-400"></i></li>
+            <li><a href="/orders" class="hover:text-indigo-600">Orders</a></li>
+            <li><i class="fa-solid fa-chevron-right text-[10px] text-slate-400"></i></li>
+            <li class="font-medium text-slate-800 font-mono" th:text="${order.orderNumber}">ORD-123</li>
+        </ol>
+    </nav>
+
+    <div class="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden p-6 sm:p-10">
+        <!-- Header -->
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between pb-6 border-b border-slate-100 gap-4">
+            <div>
+                <span class="text-xs text-slate-400 font-medium">Order Reference:</span>
+                <h1 class="text-2xl font-black text-slate-900 font-mono tracking-tight" th:text="${order.orderNumber}">ORD-1234</h1>
+                <div class="text-xs text-slate-500 mt-1">
+                    Placed on <span th:text="${#temporals.format(order.orderDate, 'MMMM dd, yyyy at HH:mm')}">Date</span>
+                </div>
+            </div>
+
+            <div class="flex items-center space-x-3">
+                <span th:if="${order.status.name() == 'PAID' or order.status.name() == 'DELIVERED'}"
+                      class="px-4 py-1.5 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800 flex items-center gap-1.5">
+                    <i class="fa-solid fa-circle-check"></i> <span th:text="${order.status.displayName}">Paid</span>
+                </span>
+                <span th:if="${order.status.name() == 'PROCESSING' or order.status.name() == 'SHIPPED'}"
+                      class="px-4 py-1.5 rounded-full text-xs font-bold bg-blue-100 text-blue-800 flex items-center gap-1.5">
+                    <i class="fa-solid fa-truck-fast"></i> <span th:text="${order.status.displayName}">Shipped</span>
+                </span>
+                <span th:if="${order.status.name() == 'CANCELLED' or order.status.name() == 'PENDING_PAYMENT'}"
+                      class="px-4 py-1.5 rounded-full text-xs font-bold bg-rose-100 text-rose-800 flex items-center gap-1.5">
+                    <i class="fa-solid fa-circle-xmark"></i> <span th:text="${order.status.displayName}">Pending</span>
+                </span>
+                <button onclick="window.print()" class="p-2 border border-slate-200 text-slate-600 hover:bg-slate-50 rounded-xl transition text-xs" title="Print Invoice">
+                    <i class="fa-solid fa-print"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Tracking Banner -->
+        <div class="my-6 p-4 rounded-2xl bg-indigo-50/60 border border-indigo-100 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 text-xs">
+            <div class="flex items-center space-x-3">
+                <div class="w-10 h-10 rounded-xl bg-indigo-600 text-white flex items-center justify-center text-lg">
+                    <i class="fa-solid fa-box-open"></i>
+                </div>
+                <div>
+                    <div class="font-bold text-slate-900">Digital Dispatch & Tracking</div>
+                    <div class="text-slate-500 font-mono mt-0.5" th:text="'Tracking Code: ' + ${order.trackingNumber != null ? order.trackingNumber : 'Pending'}">TRK-EXP-123</div>
+                </div>
+            </div>
+            <div class="text-slate-600 text-xs">
+                Estimated Delivery: <strong class="text-slate-900">3-5 Business Days</strong>
+            </div>
+        </div>
+
+        <!-- Items Table -->
+        <div class="py-6 border-b border-slate-100">
+            <h3 class="text-xs font-bold uppercase tracking-wider text-slate-400 mb-4">Items Summary</h3>
+            <div class="divide-y divide-slate-100">
+                <div th:each="item : ${order.items}" class="py-3 flex items-center justify-between text-xs">
+                    <div class="flex items-center space-x-3">
+                        <img th:if="${item.productImageUrl != null and !item.productImageUrl.isBlank()}" th:src="${item.productImageUrl}"
+                             class="w-14 h-14 rounded-xl object-cover border border-slate-100 flex-shrink-0">
+                        <div>
+                            <div class="font-bold text-slate-900 text-sm" th:text="${item.productName}">Product Name</div>
+                            <div class="text-slate-400 text-xs mt-0.5">
+                                Quantity: <strong class="text-slate-700" th:text="${item.quantity}">1</strong> &bull;
+                                Unit Price: <span th:text="'$' + ${#numbers.formatDecimal(item.unitPrice, 1, 'COMMA', 2, 'POINT')}">$299.00</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="font-extrabold text-slate-900 text-sm" th:text="'$' + ${#numbers.formatDecimal(item.subtotal, 1, 'COMMA', 2, 'POINT')}">$299.00</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Meta Details: Payment & Shipping Address -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-8 py-6 border-b border-slate-100 text-xs">
+            <div>
+                <h4 class="font-bold text-slate-900 uppercase tracking-wider text-[11px] text-slate-400 mb-3">Digital Payment Details</h4>
+                <div class="p-4 bg-slate-50 rounded-2xl border border-slate-200/80 space-y-2">
+                    <div class="flex justify-between">
+                        <span class="text-slate-500">Method:</span>
+                        <span class="font-bold text-slate-800" th:text="${order.payment.paymentMethod.displayName}">Credit Card</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-slate-500">Transaction ID:</span>
+                        <span class="font-mono font-bold text-slate-900 text-[11px]" th:text="${order.payment.transactionId}">TXN-123</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-slate-500">Account Details:</span>
+                        <span class="font-mono text-slate-700 text-[11px]" th:text="${order.payment.paymentDetails}">Visa 4242</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-slate-500">Gateway Ref:</span>
+                        <span class="font-mono text-slate-500 text-[10px]" th:text="${order.payment.gatewayReference}">GW-123</span>
+                    </div>
+                </div>
+            </div>
+
+            <div>
+                <h4 class="font-bold text-slate-900 uppercase tracking-wider text-[11px] text-slate-400 mb-3">Shipping Address</h4>
+                <div class="p-4 bg-slate-50 rounded-2xl border border-slate-200/80">
+                    <div class="font-bold text-slate-900" th:text="${order.shippingAddress.fullName}">John Doe</div>
+                    <div class="text-slate-600 mt-1" th:text="${order.shippingAddress.streetAddress}">742 Evergreen Terrace</div>
+                    <div class="text-slate-600" th:text="${order.shippingAddress.city + ', ' + order.shippingAddress.state + ' ' + order.shippingAddress.postalCode}">Springfield, OR 97477</div>
+                    <div class="text-slate-600" th:text="${order.shippingAddress.country}">United States</div>
+                    <div class="text-slate-500 mt-1 font-mono text-[11px]"><i class="fa-solid fa-phone mr-1"></i> <span th:text="${order.shippingAddress.phone}">Phone</span></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Totals -->
+        <div class="pt-6 flex justify-end">
+            <div class="w-full sm:w-72 space-y-2 text-xs">
+                <div class="flex justify-between text-slate-600">
+                    <span>Subtotal:</span>
+                    <span class="font-bold text-slate-900" th:text="'$' + ${#numbers.formatDecimal(order.subtotal, 1, 'COMMA', 2, 'POINT')}">$299.00</span>
+                </div>
+                <div class="flex justify-between text-slate-600">
+                    <span>Shipping Fee:</span>
+                    <span class="font-bold text-slate-900" th:text="${order.shippingFee.compareTo(T(java.math.BigDecimal).ZERO) == 0} ? 'FREE ($0.00)' : '$' + ${#numbers.formatDecimal(order.shippingFee, 1, 'COMMA', 2, 'POINT')}">$0.00</span>
+                </div>
+                <div class="flex justify-between text-slate-600">
+                    <span>Sales Tax:</span>
+                    <span class="font-bold text-slate-900" th:text="'$' + ${#numbers.formatDecimal(order.tax, 1, 'COMMA', 2, 'POINT')}">$23.92</span>
+                </div>
+                <div class="flex justify-between text-sm font-black text-slate-900 pt-2 border-t border-slate-200">
+                    <span>Total Amount Paid:</span>
+                    <span class="text-indigo-600" th:text="'$' + ${#numbers.formatDecimal(order.totalAmount, 1, 'COMMA', 2, 'POINT')}">$322.92</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="mt-8 pt-6 border-t border-slate-100 flex items-center justify-between">
+            <a href="/orders" class="text-xs font-bold text-indigo-600 hover:text-indigo-800">
+                &larr; Back to Order History
+            </a>
+            <a href="/products" class="text-xs font-bold text-slate-600 hover:text-slate-900">
+                Shop More Tech &rarr;
+            </a>
+        </div>
+    </div>
+</main>
+
+<footer th:replace="~{fragments/footer :: footer}"></footer>
+
+</body>
+</html>
